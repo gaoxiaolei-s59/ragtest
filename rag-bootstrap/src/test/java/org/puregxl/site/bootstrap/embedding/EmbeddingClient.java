@@ -60,15 +60,22 @@ public class EmbeddingClient {
 
         JsonNode root = objectMapper.readTree(response.body());
         JsonNode dataArray = root.get("data");
+        if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
+            throw new RuntimeException("API 响应中没有 embedding 数据，响应：" + response.body());
+        }
 
         ArrayList<double[]> embeddings = new ArrayList<>(texts.size());
 
         for (JsonNode jsonNode : dataArray) {
-            JsonNode embeddingNode = jsonNode.get("embeddings");
+            JsonNode embeddingNode = jsonNode.get("embedding");
+            if (embeddingNode == null || !embeddingNode.isArray()) {
+                throw new RuntimeException("API 响应中的 embedding 格式不正确，响应：" + response.body());
+            }
             double[] vector = new double[embeddingNode.size()];
             for (int i = 0; i < embeddingNode.size() ; i++) {
                 vector[i] = embeddingNode.get(i).asDouble();
             }
+            embeddings.add(vector);
         }
         return embeddings;
     }
