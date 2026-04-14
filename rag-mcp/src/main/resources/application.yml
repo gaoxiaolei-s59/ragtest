@@ -1,0 +1,21 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: rag-mcp
+  ai:
+    mcp:
+      server:
+        annotation-scanner:
+          enabled: false
+        name: rag-mcp
+        version: 1.0.0
+        instructions: "RAG MCP server exposing search and answer tools with fileId citations."
+        type: sync
+        protocol: sse
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
