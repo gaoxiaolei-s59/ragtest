@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EmbeddingDemo {
-    private static final String API_KEY = "sk-rjtfqcpnhpzonswkebygmaqnqvibqcndgqxqfxghizuguthf";
+    private static final String API_KEY = "sk-rjtfqcpnhpzonswkebygmaqnqvibqcndgqxqfxghizuguth";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // 1. 初始化 EmbeddingClient（替换成你自己的 API Key）

@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public class MilvusCollectionDemo {
 
-    private static final String SILICONFLOW_API_KEY = "你的 SiliconFlow API Key";
+    private static final String SILICONFLOW_API_KEY = "sk-rjtfqcpnhpzonswkebygmaqnqvibqcndgqxqfxghizuguth";
     private static final String EMBEDDING_URL = "https://api.siliconflow.cn/v1/embeddings";
     private static final String EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-8B";
     private static final Gson GSON = new Gson();
@@ -36,7 +36,7 @@ public class MilvusCollectionDemo {
         MilvusClientV2 client = new MilvusClientV2(connectConfig);
 
         // 用户的问题
-        String query = "买了东西不想要了怎么退货？";
+        String query = "没有在规定时间内选课怎么办？";
 
         // 把问题向量化（复用前面的 getEmbeddings 方法）
         List<List<Float>> queryVectors = getEmbeddings(List.of(query));
