@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class SiliconFlowRerankDemo {
-
-    private static final String API_KEY = "你的 SiliconFlow API Key";
+    private static final String API_KEY = "sk-rjtfqcpnhpzonswkebygmaqnqvibqcndgqxqfxghizuguthf";
     private static final String RERANK_URL = "https://api.siliconflow.cn/v1/rerank";
     private static final String MODEL = "BAAI/bge-reranker-v2-m3";
     private static final Gson GSON = new Gson();
@@ -25,6 +25,7 @@ public class SiliconFlowRerankDemo {
     }
 
     public static List<RerankItem> rerank(String query, List<String> candidates, int topN) throws IOException {
+
         JsonObject body = new JsonObject();
         body.addProperty("model", MODEL);
         body.addProperty("query", query);
@@ -40,11 +41,12 @@ public class SiliconFlowRerankDemo {
                 .build();
 
         try (Response response = HTTP.newCall(request).execute()) {
+            String responseBody = Objects.requireNonNull(response.body()).string();
             if (!response.isSuccessful()) {
-                throw new RuntimeException("rerank 调用失败，HTTP=" + response.code());
+                throw new RuntimeException("rerank 调用失败，HTTP=" + response.code() + ", body=" + responseBody);
             }
 
-            JsonObject resp = GSON.fromJson(response.body().string(), JsonObject.class);
+            JsonObject resp = GSON.fromJson(responseBody, JsonObject.class);
             JsonArray results = resp.getAsJsonArray("results");
 
             List<RerankItem> items = new ArrayList<>();

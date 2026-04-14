@@ -38,7 +38,7 @@ import java.util.*;
 
 public class MilvusHybridSchemaDemo2 {
 
-    private static final String COLLECTION = "customer_service_hybrid_cn_bm25";
+    private static final String COLLECTION = "customer_service_hybrid";
 
     private static final String SILICONFLOW_API_KEY = "sk-rjtfqcpnhpzonswkebygmaqnqvibqcndgqxqfxghizuguthf";
     private static final String EMBEDDING_URL = "https://api.siliconflow.cn/v1/embeddings";
@@ -68,7 +68,7 @@ public class MilvusHybridSchemaDemo2 {
         public double dropRatioSearch = 0.0; // sparse(BM25) 搜索参数
         public int rrfK = 60;                // RRF 融合参数
 
-        public List<String> outFields = List.of("text");
+        public List<String> outFields = List.of("file_id", "text");
         public ConsistencyLevel consistencyLevel = ConsistencyLevel.STRONG;
 
         public static SearchConfig defaults() {
@@ -90,6 +90,7 @@ public class MilvusHybridSchemaDemo2 {
         SearchConfig cfg = SearchConfig.defaults();
 
         SearchResp resp = runSearch(client, query, mode, cfg);
+
         printSearchResults(resp, mode);
     }
 
@@ -121,6 +122,12 @@ public class MilvusHybridSchemaDemo2 {
                     .maxLength(8192)
                     .enableAnalyzer(true)
                     .analyzerParams(chineseAnalyzerParams)
+                    .build());
+
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("file_id")
+                    .dataType(DataType.VarChar)
+                    .maxLength(256)
                     .build());
 
             schema.addField(AddFieldReq.builder()
@@ -173,12 +180,12 @@ public class MilvusHybridSchemaDemo2 {
 
             // 4) Insert demo data（只在首次创建时插入，避免重复）
             List<JsonObject> rows = Arrays.asList(
-                    buildRow("选课规则：学生应在每学期开学前两周内登录教务系统完成选课。"),
-                    buildRow("退课规则：学生在开课后第一周内可申请退课，超过时间需审批。"),
-                    buildRow("缓考申请：因生病或重大突发情况无法参加考试的学生，应在考试前提交缓考申请，并附相关证明材料。"),
-                    buildRow("考试证件要求：参加考试时，学生须携带本人学生证或校园卡。"),
-                    buildRow("补考规定：期末考试不及格的学生可参加下一学期开学初组织的补考。"),
-                    buildRow("课程容量说明：热门课程达到人数上限后系统不再接受新的选课请求。")
+                    buildRow("course_selection_policy", "选课规则：学生应在每学期开学前两周内登录教务系统完成选课。"),
+                    buildRow("course_withdraw_policy", "退课规则：学生在开课后第一周内可申请退课，超过时间需审批。"),
+                    buildRow("exam_defer_policy", "缓考申请：因生病或重大突发情况无法参加考试的学生，应在考试前提交缓考申请，并附相关证明材料。"),
+                    buildRow("exam_identity_policy", "考试证件要求：参加考试时，学生须携带本人学生证或校园卡。"),
+                    buildRow("exam_makeup_policy", "补考规定：期末考试不及格的学生可参加下一学期开学初组织的补考。"),
+                    buildRow("course_capacity_policy", "课程容量说明：热门课程达到人数上限后系统不再接受新的选课请求。")
             );
 
             InsertResp insertResp = client.insert(InsertReq.builder()
@@ -293,7 +300,9 @@ public class MilvusHybridSchemaDemo2 {
             for (int i = 0; i < oneQueryResults.size(); i++) {
                 SearchResp.SearchResult r = oneQueryResults.get(i);
                 System.out.println("Top-" + (i + 1) + " score=" + r.getScore() + ", id=" + r.getId());
+                Object fileId = r.getEntity() == null ? null : r.getEntity().get("file_id");
                 Object text = r.getEntity() == null ? null : r.getEntity().get("text");
+                System.out.println("  file_id: " + fileId);
                 System.out.println("  " + text);
             }
         }
@@ -303,8 +312,9 @@ public class MilvusHybridSchemaDemo2 {
      * 构建一行数据：text + text_dense（text_sparse 由 BM25 Function 自动生成）
      */
     @SneakyThrows
-    private static JsonObject buildRow(String text) {
+    private static JsonObject buildRow(String fileId, String text) {
         JsonObject row = new JsonObject();
+        row.addProperty("file_id", fileId);
         row.addProperty("text", text);
 
         List<Float> denseVector = getEmbedding(text);
