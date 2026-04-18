@@ -20,7 +20,6 @@ public class ModelSelector {
 
     private final ModelHealthStore healthStore;
 
-
     public List<ModelTarget> selectChatCandidates(boolean deepThinking) {
         AIModelProperties.ModelGroup group = properties.getChat();
         if (group == null) {
@@ -127,6 +126,12 @@ public class ModelSelector {
 
         return enabled;
     }
+
+
+
+
+
+
 
 
     /**

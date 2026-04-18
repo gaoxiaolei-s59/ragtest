@@ -2,6 +2,7 @@ package org.puregxl.site.infra.chat;
 
 import org.puregxl.site.infra.convention.ChatRequest;
 import org.puregxl.site.infra.enums.ModelProvider;
+import org.puregxl.site.infra.model.ModelTarget;
 
 /**
  * Chat接口
@@ -15,13 +16,17 @@ public interface ChatClient {
      */
     String provider();
 
+
+
     /**
-     * 对话(同步聊天)
-     * @return
+     * 同步聊天方法
+     * 发送请求并等待完整响应返回
+     *
+     * @param request 聊天请求对象，包含用户消息和对话历史
+     * @param target  目标模型配置，指定使用的具体模型
+     * @return 模型返回的完整响应文本
      */
-    String chat(ChatRequest request);
-
-
+    String chat(ChatRequest request, ModelTarget target);
 
 
 }

@@ -47,5 +47,10 @@ public class ChatRequest {
      */
     private Boolean enableTools;
 
+    /**
+     * 思考模式
+     */
+    private Boolean thinking;
+
 
 }
