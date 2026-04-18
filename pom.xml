@@ -11,6 +11,7 @@
     <modules>
         <module>rag-bootstrap</module>
         <module>rag-mcp</module>
+        <module>infra</module>
     </modules>
 
     <properties>
