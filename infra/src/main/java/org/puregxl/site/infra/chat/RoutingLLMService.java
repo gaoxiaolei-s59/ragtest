@@ -1,10 +1,7 @@
 package org.puregxl.site.infra.chat;
 
-import cn.hutool.crypto.Mode;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.puregxl.site.infra.convention.ChatRequest;
 import org.puregxl.site.infra.enums.ModelCapability;
 import org.puregxl.site.infra.model.ModelHealthStore;

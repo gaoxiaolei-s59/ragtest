@@ -8,10 +8,11 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class ChatRequest {
 
     /**
@@ -23,7 +24,7 @@ public class ChatRequest {
     /**
      * 采样温度参数，取值通常为 0～2
      */
-    private Double template;
+    private Double temperature;
 
     /**
      * topP
@@ -39,7 +40,7 @@ public class ChatRequest {
     /**
      * 最大输出token
      */
-    private Integer maxToken;
+    private Integer maxTokens;
 
 
     /**
