@@ -27,4 +27,12 @@ public interface LLMService {
      * @return
      */
     String chat(ChatRequest chatRequest);
+
+    /**
+     * 同步调用（指定模型）
+     * <p>
+     **/
+    default String chat(ChatRequest request, String modelId) {
+        return chat(request);
+    }
 }

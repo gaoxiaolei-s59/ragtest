@@ -8,9 +8,18 @@ import org.puregxl.site.infra.convention.ChatRequest;
 public class RoutingLLMService implements LLMService{
 
 
-
     @Override
     public String chat(ChatRequest chatRequest) {
         return "";
+    }
+
+    @Override
+    public String chat(String userPrompt) {
+        return LLMService.super.chat(userPrompt);
+    }
+
+    @Override
+    public String chat(ChatRequest request, String modelId) {
+        return LLMService.super.chat(request, modelId);
     }
 }
