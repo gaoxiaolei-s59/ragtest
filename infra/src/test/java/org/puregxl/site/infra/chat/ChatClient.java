@@ -1,13 +1,14 @@
 package org.puregxl.site.infra.chat;
 
+import org.puregxl.site.infra.convention.ChatMessage;
 import org.puregxl.site.infra.convention.ChatRequest;
 import org.puregxl.site.infra.enums.ModelProvider;
 import org.puregxl.site.infra.model.ModelTarget;
 
-/**
- * Chat接口
- */
+import java.util.List;
+
 public interface ChatClient {
+
 
     /**
      * 获取服务提供商名称
@@ -15,8 +16,6 @@ public interface ChatClient {
      * @return 服务提供商标识：{@link ModelProvider}
      */
     String provider();
-
-
 
     /**
      * 同步聊天方法
@@ -27,6 +26,4 @@ public interface ChatClient {
      * @return 模型返回的完整响应文本
      */
     String chat(ChatRequest request, ModelTarget target);
-
-
 }

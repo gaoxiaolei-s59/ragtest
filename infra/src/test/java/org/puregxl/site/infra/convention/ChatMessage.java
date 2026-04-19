@@ -1,11 +1,9 @@
 package org.puregxl.site.infra.convention;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessage {
 
@@ -58,7 +56,7 @@ public class ChatMessage {
      * @param prompt
      * @return
      */
-    public ChatMessage system(String prompt) {
+    public static ChatMessage system(String prompt) {
         return new ChatMessage(Role.SYSTEM, prompt);
     }
 
@@ -68,7 +66,7 @@ public class ChatMessage {
      * @param prompt
      * @return
      */
-    public ChatMessage user(String prompt) {
+    public static ChatMessage user(String prompt) {
         return new ChatMessage(Role.USER, prompt);
     }
 
@@ -78,7 +76,7 @@ public class ChatMessage {
      * @param prompt
      * @return
      */
-    public ChatMessage assistant(String prompt) {
+    public static ChatMessage assistant(String prompt) {
         return new ChatMessage(Role.ASSISTANT, prompt);
     }
 

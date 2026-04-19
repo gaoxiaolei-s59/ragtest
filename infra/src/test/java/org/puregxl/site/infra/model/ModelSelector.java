@@ -1,23 +1,27 @@
 package org.puregxl.site.infra.model;
 
+
 import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.puregxl.site.infra.config.AIModelProperties;
 import org.puregxl.site.infra.enums.ModelProvider;
 import org.springframework.stereotype.Component;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 模型选择器
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class ModelSelector {
     private final AIModelProperties properties;
-
     private final ModelHealthStore healthStore;
 
     public List<ModelTarget> selectChatCandidates(boolean deepThinking) {
@@ -27,9 +31,9 @@ public class ModelSelector {
         }
 
         String firstChoiceModelId = resolveFirstChoiceModel(group, deepThinking);
-
         return selectCandidates(group, firstChoiceModelId, deepThinking);
     }
+
 
     private String resolveFirstChoiceModel(AIModelProperties.ModelGroup group, boolean deepThinking) {
         if (deepThinking) {
@@ -39,14 +43,6 @@ public class ModelSelector {
             }
         }
         return group.getDefaultModel();
-    }
-
-    public List<ModelTarget> selectEmbeddingCandidates() {
-        return selectCandidates(properties.getEmbedding());
-    }
-
-    public List<ModelTarget> selectRerankCandidates() {
-        return selectCandidates(properties.getRerank());
     }
 
     private List<ModelTarget> selectCandidates(AIModelProperties.ModelGroup group) {
@@ -68,45 +64,11 @@ public class ModelSelector {
     }
 
     /**
-     * 构建ModelTargets
-     * @param candidates
-     * @return
-     */
-    private List<ModelTarget> buildAvailableTargets(List<AIModelProperties.ModelCandidate> candidates) {
-        Map<String, AIModelProperties.ProviderConfig> providers = properties.getProviders();
-
-        return candidates.stream()
-                .map(candidate -> buildModelTarget(candidate, providers))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 构建ModelTargets
-     * @param candidate
-     * @param providers
-     * @return
-     */
-    private ModelTarget buildModelTarget(AIModelProperties.ModelCandidate candidate, Map<String, AIModelProperties.ProviderConfig> providers) {
-        String modelId = resolveId(candidate);
-
-        if (healthStore.isUnavailable(modelId)) {
-            return null;
-        }
-
-        AIModelProperties.ProviderConfig provider = providers.get(candidate.getProvider());
-        if (provider == null && !ModelProvider.NOOP.matches(candidate.getProvider())) {
-            log.warn("Provider配置缺失: provider={}, modelId={}", candidate.getProvider(), modelId);
-            return null;
-        }
-
-        return new ModelTarget(modelId, candidate, provider);
-    }
-
-    /**
      * 过滤并排序候选模型列表
      */
-    private List<AIModelProperties.ModelCandidate> filterAndSortCandidates(List<AIModelProperties.ModelCandidate> candidates, String firstChoiceModelId, boolean deepThinking) {
+    private List<AIModelProperties.ModelCandidate> filterAndSortCandidates(List<AIModelProperties.ModelCandidate> candidates,
+                                                                           String firstChoiceModelId,
+                                                                           boolean deepThinking) {
         List<AIModelProperties.ModelCandidate> enabled = candidates.stream()
                 .filter(c -> c != null && !Boolean.FALSE.equals(c.getEnabled()))
                 .filter(c -> !deepThinking || Boolean.TRUE.equals(c.getSupportsThinking()))
@@ -123,22 +85,34 @@ public class ModelSelector {
             log.warn("深度思考模式没有可用候选模型");
         }
 
-
         return enabled;
     }
 
+    private List<ModelTarget> buildAvailableTargets(List<AIModelProperties.ModelCandidate> candidates) {
+        Map<String, AIModelProperties.ProviderConfig> providers = properties.getProviders();
 
+        return candidates.stream()
+                .map(candidate -> buildModelTarget(candidate, providers))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 
+    private ModelTarget buildModelTarget(AIModelProperties.ModelCandidate candidate, Map<String, AIModelProperties.ProviderConfig> providers) {
+        String modelId = resolveId(candidate);
 
+        if (healthStore.isUnavailable(modelId)) {
+            return null;
+        }
 
+        AIModelProperties.ProviderConfig provider = providers.get(candidate.getProvider());
+        if (provider == null && !ModelProvider.NOOP.matches(candidate.getProvider())) {
+            log.warn("Provider配置缺失: provider={}, modelId={}", candidate.getProvider(), modelId);
+            return null;
+        }
 
+        return new ModelTarget(modelId, candidate, provider);
+    }
 
-
-    /**
-     * 封装id
-     * @param candidate
-     * @return
-     */
     private String resolveId(AIModelProperties.ModelCandidate candidate) {
         if (StrUtil.isNotBlank(candidate.getId())) {
             return candidate.getId();
@@ -147,6 +121,4 @@ public class ModelSelector {
                 Objects.toString(candidate.getProvider(), "unknown"),
                 Objects.toString(candidate.getModel(), "unknown"));
     }
-
-
 }

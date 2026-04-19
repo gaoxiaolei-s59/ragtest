@@ -1,8 +1,9 @@
 package org.puregxl.site.infra.chat;
 
-import cn.hutool.core.collection.CollUtil;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -16,27 +17,29 @@ import org.puregxl.site.infra.enums.ModelCapability;
 import org.puregxl.site.infra.http.*;
 import org.puregxl.site.infra.model.ModelTarget;
 
-
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 @Slf4j
-public abstract class AbstractOpenAIStyleChatClient implements ChatClient{
+public abstract class AbstractChatClient implements ChatClient {
+
+
     protected final OkHttpClient httpClient;
-    protected final Executor modelStreamExecutor;
     protected final Gson gson = new Gson();
 
-    protected AbstractOpenAIStyleChatClient(OkHttpClient httpClient, Executor modelStreamExecutor) {
+
+    protected AbstractChatClient(OkHttpClient httpClient) {
         this.httpClient = httpClient;
-        this.modelStreamExecutor = modelStreamExecutor;
     }
 
+
     /**
-     * 流式调用时是否启用 reasoning_content 解析，默认根据请求中的 thinking 标志决定
+     * 是否要求提供商配置 API Key
      */
-    protected boolean isReasoningEnabledForStream(ChatRequest request) {
-        return Boolean.TRUE.equals(request.getThinking());
+    protected boolean requiresApiKey() {
+        return true;
     }
 
     /**
@@ -49,16 +52,8 @@ public abstract class AbstractOpenAIStyleChatClient implements ChatClient{
         }
     }
 
-    /**
-     * 是否要求提供商配置 API Key
-     */
-    protected boolean requiresApiKey() {
-        return true;
-    }
 
-
-   // ==================== 模板方法：同步调用 ====================
-
+    //同步调用方法
     protected String doChat(ChatRequest request, ModelTarget target) {
         AIModelProperties.ProviderConfig provider = HttpResponseHelper.requireProvider(target, provider());
         if (requiresApiKey()) {
@@ -92,8 +87,6 @@ public abstract class AbstractOpenAIStyleChatClient implements ChatClient{
     }
 
 
-    //======================== 共享方法=================
-
     protected JsonObject buildRequestBody(ChatRequest request, ModelTarget target, boolean stream) {
         JsonObject body = new JsonObject();
         body.addProperty("model", HttpResponseHelper.requireModel(target, provider()));
@@ -120,22 +113,31 @@ public abstract class AbstractOpenAIStyleChatClient implements ChatClient{
         return body;
     }
 
-
     private JsonArray buildMessages(ChatRequest request) {
-        JsonArray arr = new JsonArray();
+        JsonArray array = new JsonArray();
         List<ChatMessage> messages = request.getMessages();
-        if (CollUtil.isNotEmpty(messages)) {
-            for (ChatMessage m : messages) {
-                JsonObject msg = new JsonObject();
-                msg.addProperty("role", toOpenAiRole(m.getRole()));
-                msg.addProperty("content", m.getContent());
-                arr.add(msg);
-            }
+        for (ChatMessage message : messages) {
+            JsonObject object = new JsonObject();
+            object.addProperty("role", toRole(message.getRole()));
+            object.addProperty("content", message.getContent());
+            array.add(object);
         }
-        return arr;
+
+        return array;
     }
 
-    private String toOpenAiRole(ChatMessage.Role role) {
+
+    private Request.Builder newAuthorizedRequest(AIModelProperties.ProviderConfig provider, ModelTarget target) {
+        Request.Builder builder = new Request.Builder()
+                .url(ModelUrlResolver.resolveUrl(provider, target.getCandidate(), ModelCapability.CHAT));
+        if (requiresApiKey()) {
+            builder.addHeader("Authorization", "Bearer " + provider.getApiKey());
+        }
+        return builder;
+    }
+
+
+    public String toRole(ChatMessage.Role role) {
         return switch (role) {
             case SYSTEM -> "system";
             case USER -> "user";
@@ -143,16 +145,6 @@ public abstract class AbstractOpenAIStyleChatClient implements ChatClient{
         };
     }
 
-
-
-    private Request.Builder newAuthorizedRequest(AIModelProperties.ProviderConfig provider, ModelTarget target) {
-        Request.Builder builder = new Request.Builder()
-                .url(ModelUrlResolver.resolveUrl(provider, target.candidate(), ModelCapability.CHAT));
-        if (requiresApiKey()) {
-            builder.addHeader("Authorization", "Bearer " + provider.getApiKey());
-        }
-        return builder;
-    }
 
     private String extractChatContent(JsonObject respJson) {
         if (respJson == null || !respJson.has("choices")) {

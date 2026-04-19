@@ -5,11 +5,7 @@ import org.puregxl.site.infra.convention.ChatRequest;
 
 import java.util.List;
 
-/**
- * 通用大语言模型（LLM）访问接口
- */
 public interface LLMService {
-
     /**
      * 默认方法
      * @return

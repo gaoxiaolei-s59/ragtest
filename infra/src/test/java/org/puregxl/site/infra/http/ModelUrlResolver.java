@@ -17,7 +17,6 @@
 
 package org.puregxl.site.infra.http;
 
-
 import lombok.NoArgsConstructor;
 import org.puregxl.site.infra.config.AIModelProperties;
 import org.puregxl.site.infra.enums.ModelCapability;

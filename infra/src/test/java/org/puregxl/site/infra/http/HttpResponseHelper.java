@@ -66,10 +66,10 @@ public final class HttpResponseHelper {
      * 校验并返回提供商配置
      */
     public static AIModelProperties.ProviderConfig requireProvider(ModelTarget target, String label) {
-        if (target == null || target.provider() == null) {
+        if (target == null || target.getProvider() == null) {
             throw new IllegalStateException(label + " 提供商配置缺失");
         }
-        return target.provider();
+        return target.getProvider();
     }
 
     /**
@@ -85,9 +85,9 @@ public final class HttpResponseHelper {
      * 校验并返回模型名称
      */
     public static String requireModel(ModelTarget target, String label) {
-        if (target == null || target.candidate() == null || target.candidate().getModel() == null) {
+        if (target == null || target.getCandidate() == null || target.getCandidate().getModel() == null) {
             throw new IllegalStateException(label + " 模型名称缺失");
         }
-        return target.candidate().getModel();
+        return target.getCandidate().getModel();
     }
 }
